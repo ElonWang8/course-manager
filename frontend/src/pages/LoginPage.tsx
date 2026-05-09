@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../api/client";
 
 export default function LoginPage({ onLogin }: { onLogin: () => void }) {
+  const navigate = useNavigate();
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
   const [error, setError] = useState("");
@@ -17,11 +19,18 @@ export default function LoginPage({ onLogin }: { onLogin: () => void }) {
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("expires_at", res.data.expires_at);
         onLogin();
+        navigate("/schedule", { replace: true });
       } else {
         setError("密码错误");
       }
-    } catch {
-      setError("登录失败，请重试");
+    } catch (err: any) {
+      if (err?.response?.data?.detail) {
+        setError(err.response.data.detail);
+      } else if (err?.message) {
+        setError("网络错误: " + err.message);
+      } else {
+        setError("登录失败，请重试");
+      }
     } finally {
       setLoading(false);
     }

@@ -17,7 +17,7 @@ export default function App() {
 
   return (
     <Routes>
-      <Route path="/login" element={<LoginPage onLogin={() => setAuth(true)} />} />
+      <Route path="/login" element={auth ? <Navigate to="/schedule" replace /> : <LoginPage onLogin={() => setAuth(true)} />} />
       <Route
         path="/*"
         element={auth ? <MainLayout onLogout={() => { localStorage.clear(); setAuth(false); }} /> : <Navigate to="/login" />}

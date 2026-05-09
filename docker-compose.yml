@@ -1,0 +1,19 @@
+services:
+  backend:
+    build: ./backend
+    environment:
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
+      - JWT_SECRET=${JWT_SECRET:-change-me-to-random-string}
+      - TZ=Asia/Shanghai
+    volumes:
+      - ./backend/data:/app/data
+      - /etc/localtime:/etc/localtime:ro
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3721:80"
+    environment:
+      - TZ=Asia/Shanghai
+    depends_on:
+      - backend

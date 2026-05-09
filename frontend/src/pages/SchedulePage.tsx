@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 import "dayjs/locale/zh-cn";
 import api from "../api/client";
 import { ScheduleSlot, Lesson } from "../types";
 import EmptyState from "../components/EmptyState";
 
+dayjs.extend(utc);
 dayjs.locale("zh-cn");
 
 export default function SchedulePage() {

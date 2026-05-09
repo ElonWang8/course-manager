@@ -1,6 +1,7 @@
+# 本地构建版本，不依赖预编译镜像
 services:
   backend:
-    image: ghcr.io/elonwang8/course-manager-backend:latest
+    build: ./backend
     environment:
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
       - JWT_SECRET=${JWT_SECRET:-change-me-to-random-string}
@@ -10,7 +11,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
 
   frontend:
-    image: ghcr.io/elonwang8/course-manager-frontend:latest
+    build: ./frontend
     ports:
       - "3721:80"
     environment:

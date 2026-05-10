@@ -63,9 +63,15 @@ export default function StudentsPage() {
 
   const handleQuickCheckIn = async (studentId: string) => {
     try {
+      const now = new Date();
+      const local = now.getFullYear() + "-" +
+        String(now.getMonth() + 1).padStart(2, "0") + "-" +
+        String(now.getDate()).padStart(2, "0") + "T" +
+        String(now.getHours()).padStart(2, "0") + ":" +
+        String(now.getMinutes()).padStart(2, "0") + ":00";
       await api.post("/lessons", {
         student_id: studentId,
-        date: new Date().toISOString(),
+        date: local,
         duration: 45,
         status: "completed",
       });

@@ -38,9 +38,15 @@ export default function StudentDetailPage() {
 
   const handleQuickCheckIn = async () => {
     try {
+      const now = new Date();
+      const local = now.getFullYear() + "-" +
+        String(now.getMonth() + 1).padStart(2, "0") + "-" +
+        String(now.getDate()).padStart(2, "0") + "T" +
+        String(now.getHours()).padStart(2, "0") + ":" +
+        String(now.getMinutes()).padStart(2, "0") + ":00";
       await api.post("/lessons", {
         student_id: id,
-        date: new Date().toISOString(),
+        date: local,
         duration: 45,
         status: "completed",
       });
@@ -62,10 +68,10 @@ export default function StudentDetailPage() {
     student.remaining_lessons > 10 ? "text-green-500" :
     student.remaining_lessons >= 3 ? "text-orange-500" : "text-red-500";
 
-  const completedLessons = (student.lessons || []).filter((l) => l.status === "completed").sort((a, b) => dayjs.utc(b.date).unix() - dayjs.utc(a.date).unix());
-  const scheduledLessons = (student.lessons || []).filter((l) => l.status === "scheduled").sort((a, b) => dayjs.utc(a.date).unix() - dayjs.utc(b.date).unix());
+  const completedLessons = (student.lessons || []).filter((l) => l.status === "completed").sort((a, b) => dayjs(b.date).unix() - dayjs(a.date).unix());
+  const scheduledLessons = (student.lessons || []).filter((l) => l.status === "scheduled").sort((a, b) => dayjs(a.date).unix() - dayjs(b.date).unix());
   const filteredLessons = lessonSub === 0 ? completedLessons : scheduledLessons;
-  const payments = (student.payments || []).sort((a, b) => dayjs.utc(b.date).unix() - dayjs.utc(a.date).unix());
+  const payments = (student.payments || []).sort((a, b) => dayjs(b.date).unix() - dayjs(a.date).unix());
 
   return (
     <div className="pb-24">
@@ -83,7 +89,7 @@ export default function StudentDetailPage() {
           <span className={student.is_active ? "text-green-500" : "text-gray-400"}>
             {student.is_active ? "在读" : "已停课"}
           </span>
-          <span>学琴自 {dayjs.utc(student.start_date).format("YYYY年M月")}</span>
+          <span>学琴自 {dayjs(student.start_date).format("YYYY年M月")}</span>
         </div>
         {student.phone && <div className="text-xs text-gray-400 mt-1">{student.phone}</div>}
         {student.age && <div className="text-xs text-gray-400">{student.age}岁</div>}
@@ -133,7 +139,7 @@ export default function StudentDetailPage() {
               {filteredLessons.map((l) => (
                 <div key={l.id} className="bg-white border rounded-lg px-4 py-3 flex items-center justify-between text-sm">
                   <div>
-                    <div className="text-xs text-gray-400">{dayjs.utc(l.date).format("M月D日 HH:mm")} · {l.duration}分钟</div>
+                    <div className="text-xs text-gray-400">{dayjs(l.date).format("M月D日 HH:mm")} · {l.duration}分钟</div>
                     {l.content && <div className="text-xs text-gray-500 mt-0.5">{l.content}</div>}
                     {l.group_class_name && <div className="text-xs text-purple-400">{l.group_class_name}</div>}
                   </div>
@@ -165,8 +171,8 @@ export default function StudentDetailPage() {
                   <PaymentMethodBadge method={p.payment_method} />
                 </div>
                 <div className="text-xs text-gray-400 mt-1">
-                  {dayjs.utc(p.date).format("YYYY-MM-DD")} · {p.lesson_count}课时
-                  {p.validity_start && <span> · {dayjs.utc(p.validity_start).format("M/D")}-{dayjs.utc(p.validity_end).format("M/D")}</span>}
+                  {dayjs(p.date).format("YYYY-MM-DD")} · {p.lesson_count}课时
+                  {p.validity_start && <span> · {dayjs(p.validity_start).format("M/D")}-{dayjs(p.validity_end).format("M/D")}</span>}
                 </div>
                 {p.notes && <div className="text-xs text-gray-500 mt-1">{p.notes}</div>}
               </div>

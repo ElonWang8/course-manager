@@ -48,7 +48,7 @@ export default function SchedulePage() {
     return lessons.find(
       (l) =>
         l.date &&
-        dayjs.utc(l.date).format("YYYY-MM-DD") === day.format("YYYY-MM-DD") &&
+        dayjs(l.date).format("YYYY-MM-DD") === day.format("YYYY-MM-DD") &&
         ((slot.schedule_type === "individual" && l.student_id === slot.student_id) ||
           (slot.schedule_type === "group" && l.group_class_id === slot.group_class_id))
     );
@@ -59,7 +59,7 @@ export default function SchedulePage() {
       const res = await api.post("/lessons", {
         student_id: slot.student_id || undefined,
         group_class_id: slot.group_class_id || undefined,
-        date: day.hour(slot.hour).minute(slot.minute).second(0).toISOString(),
+        date: day.hour(slot.hour).minute(slot.minute).second(0).format("YYYY-MM-DDTHH:mm:ss"),
         duration: slot.duration,
         status: "completed",
       });
@@ -87,6 +87,20 @@ export default function SchedulePage() {
       .sort((a, b) => a.hour * 60 + a.minute - (b.hour * 60 + b.minute));
   };
 
+  // Lessons that don't match any schedule slot
+  const getUnscheduledLessons = (day: dayjs.Dayjs) => {
+    return lessons.filter((l) => {
+      if (!l.date) return false;
+      if (dayjs(l.date).format("YYYY-MM-DD") !== day.format("YYYY-MM-DD")) return false;
+      // Check if this lesson matches any slot
+      return !slots.some((s) =>
+        s.weekday === (day.day() === 0 ? 7 : day.day()) &&
+        ((s.schedule_type === "individual" && l.student_id === s.student_id) ||
+         (s.schedule_type === "group" && l.group_class_id === s.group_class_id))
+      );
+    });
+  };
+
   if (loading) return <div className="text-center py-16 text-gray-400">加载中...</div>;
 
   return (
@@ -107,16 +121,26 @@ export default function SchedulePage() {
       <div className="hidden md:grid grid-cols-7 gap-1">
         {weekDays.map((day) => {
           const daySlots = getSlotLessonsForDay(day);
+          const unscheduled = getUnscheduledLessons(day);
           const isToday = day.format("YYYY-MM-DD") === dayjs().format("YYYY-MM-DD");
           return (
             <div key={day.format("YYYY-MM-DD")} className={`border rounded-lg p-2 min-h-[120px] ${isToday ? "border-blue-300 bg-blue-50/30" : "border-gray-100 bg-white"}`}>
               <div className={`text-xs font-medium mb-2 text-center ${isToday ? "text-blue-600" : "text-gray-500"}`}>
                 {day.format("ddd M/D")}
               </div>
-              {daySlots.length === 0 ? (
+              {daySlots.length === 0 && unscheduled.length === 0 ? (
                 <div className="text-xs text-gray-300 text-center mt-4">-</div>
               ) : (
                 <div className="space-y-1">
+                  {unscheduled.map((l) => (
+                    <div key={l.id} className="text-xs p-1.5 rounded bg-yellow-50 border border-yellow-100">
+                      <div className="font-medium truncate">{l.student_name || l.group_class_name || "未知"}</div>
+                      <div className="text-gray-400">{dayjs(l.date).format("HH:mm")}</div>
+                      {l.status === "completed" ? <span className="text-green-500 text-[10px]">已完成</span>
+                       : l.status === "cancelled" ? <span className="text-gray-400 text-[10px] line-through">已取消</span>
+                       : <span className="text-blue-500 text-[10px]">已预约</span>}
+                    </div>
+                  ))}
                   {daySlots.map((slot) => {
                     const lesson = getLessonForSlot(slot, day);
                     return (
@@ -137,7 +161,7 @@ export default function SchedulePage() {
                                   const res = await api.post("/lessons", {
                                     student_id: slot.student_id || undefined,
                                     group_class_id: slot.group_class_id || undefined,
-                                    date: day.hour(slot.hour).minute(slot.minute).second(0).toISOString(),
+                                    date: day.hour(slot.hour).minute(slot.minute).second(0).format("YYYY-MM-DDTHH:mm:ss"),
                                     duration: slot.duration,
                                     status: "cancelled",
                                   });
@@ -174,6 +198,15 @@ export default function SchedulePage() {
                 <div className="text-xs text-gray-300">无课程</div>
               ) : (
                 <div className="space-y-2">
+                  {unscheduled.map((l) => (
+                    <div key={l.id} className="text-xs p-1.5 rounded bg-yellow-50 border border-yellow-100">
+                      <div className="font-medium truncate">{l.student_name || l.group_class_name || "未知"}</div>
+                      <div className="text-gray-400">{dayjs(l.date).format("HH:mm")}</div>
+                      {l.status === "completed" ? <span className="text-green-500 text-[10px]">已完成</span>
+                       : l.status === "cancelled" ? <span className="text-gray-400 text-[10px] line-through">已取消</span>
+                       : <span className="text-blue-500 text-[10px]">已预约</span>}
+                    </div>
+                  ))}
                   {daySlots.map((slot) => {
                     const lesson = getLessonForSlot(slot, day);
                     return (
@@ -197,7 +230,7 @@ export default function SchedulePage() {
                                   const res = await api.post("/lessons", {
                                     student_id: slot.student_id || undefined,
                                     group_class_id: slot.group_class_id || undefined,
-                                    date: day.hour(slot.hour).minute(slot.minute).second(0).toISOString(),
+                                    date: day.hour(slot.hour).minute(slot.minute).second(0).format("YYYY-MM-DDTHH:mm:ss"),
                                     duration: slot.duration,
                                     status: "cancelled",
                                   });

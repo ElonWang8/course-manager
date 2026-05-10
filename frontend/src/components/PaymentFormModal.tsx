@@ -1,4 +1,5 @@
 import { useState } from "react";
+import dayjs from "dayjs";
 import api from "../api/client";
 
 interface Props {
@@ -9,7 +10,7 @@ interface Props {
 }
 
 export default function PaymentFormModal({ studentId, groupClassId, onClose, onSaved }: Props) {
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState(dayjs().format("YYYY-MM-DD"));
   const [amount, setAmount] = useState("");
   const [lessonCount, setLessonCount] = useState("4");
   const [method, setMethod] = useState("wechat");
@@ -20,7 +21,7 @@ export default function PaymentFormModal({ studentId, groupClassId, onClose, onS
       await api.post("/payments", {
         student_id: studentId || undefined,
         group_class_id: groupClassId || undefined,
-        date: new Date(date).toISOString(),
+        date: date + "T00:00:00",
         amount: parseFloat(amount) || 0,
         lesson_count: parseInt(lessonCount) || 4,
         payment_method: method,

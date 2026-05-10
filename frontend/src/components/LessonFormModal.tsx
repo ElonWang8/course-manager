@@ -1,4 +1,5 @@
 import { useState } from "react";
+import dayjs from "dayjs";
 import api from "../api/client";
 
 interface Props {
@@ -9,7 +10,7 @@ interface Props {
 }
 
 export default function LessonFormModal({ studentId, groupClassId, onClose, onSaved }: Props) {
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState(dayjs().format("YYYY-MM-DD"));
   const [time, setTime] = useState("16:00");
   const [duration, setDuration] = useState("45");
   const [content, setContent] = useState("");
@@ -20,7 +21,7 @@ export default function LessonFormModal({ studentId, groupClassId, onClose, onSa
       await api.post("/lessons", {
         student_id: studentId || undefined,
         group_class_id: groupClassId || undefined,
-        date: new Date(date + "T" + time + ":00+08:00").toISOString(),
+        date: date + "T" + time + ":00",
         duration: parseInt(duration) || 45,
         content: content || undefined,
         status,

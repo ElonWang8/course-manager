@@ -60,7 +60,7 @@ export default function LessonsPage() {
   };
 
   const getLessonsForDay = (day: dayjs.Dayjs) =>
-    filtered.filter((l) => dayjs.utc(l.date).format("YYYY-MM-DD") === day.format("YYYY-MM-DD"));
+    filtered.filter((l) => dayjs(l.date).format("YYYY-MM-DD") === day.format("YYYY-MM-DD"));
 
   if (loading) return <div className="text-center py-16 text-gray-400">加载中...</div>;
 
@@ -106,7 +106,7 @@ export default function LessonsPage() {
                 <div>
                   <div className="font-medium">{l.student_name || l.group_class_name || "未指定"}</div>
                   <div className="text-xs text-gray-400 mt-0.5">
-                    {dayjs.utc(l.date).format("M月D日 HH:mm")} · {l.duration}分钟
+                    {dayjs(l.date).format("M月D日 HH:mm")} · {l.duration}分钟
                     {l.content && <span> · {l.content}</span>}
                     {l.is_rescheduled && <span className="text-orange-400"> · 已调课</span>}
                   </div>

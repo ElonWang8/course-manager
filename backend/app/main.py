@@ -13,7 +13,7 @@ from app.auth import decode_access_token
 from app.routers import auth, students, lessons, payments, group_classes, schedule, statistics, backup, export
 from app.services.backup import start_scheduler
 
-STATIC_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "static")
+STATIC_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static")
 
 
 @asynccontextmanager

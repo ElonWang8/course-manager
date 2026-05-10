@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../api/client";
 import { Student, GroupClass } from "../types";
 import { ActiveBadge } from "../components/StatusBadge";
 import EmptyState from "../components/EmptyState";
+import LessonFormModal from "../components/LessonFormModal";
+import PaymentFormModal from "../components/PaymentFormModal";
 
 type Segment = "individual" | "group";
 
@@ -24,6 +27,7 @@ interface GroupForm {
 }
 
 export default function StudentsPage() {
+  const navigate = useNavigate();
   const [segment, setSegment] = useState<Segment>("individual");
   const [students, setStudents] = useState<Student[]>([]);
   const [groupClasses, setGroupClasses] = useState<GroupClass[]>([]);
@@ -32,6 +36,10 @@ export default function StudentsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [studentForm, setStudentForm] = useState<StudentForm>({ name: "", phone: "", age: "", grade: "", notes: "", is_active: true });
   const [groupForm, setGroupForm] = useState<GroupForm>({ name: "", total_lessons: "", price: "", notes: "", is_active: true });
+
+  // Quick action modal state
+  const [quickLessonId, setQuickLessonId] = useState<string | null>(null);
+  const [quickPaymentId, setQuickPaymentId] = useState<string | null>(null);
 
   useEffect(() => {
     loadData();
@@ -48,9 +56,21 @@ export default function StudentsPage() {
         setGroupClasses(res.data);
       }
     } catch {
-      // ignore
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleQuickCheckIn = async (studentId: string) => {
+    try {
+      await api.post("/lessons", {
+        student_id: studentId,
+        date: new Date().toISOString(),
+        duration: 45,
+        status: "completed",
+      });
+      loadData();
+    } catch {
     }
   };
 
@@ -75,7 +95,6 @@ export default function StudentsPage() {
       setEditingId(null);
       loadData();
     } catch {
-      // ignore
     }
   };
 
@@ -98,7 +117,6 @@ export default function StudentsPage() {
       setEditingId(null);
       loadData();
     } catch {
-      // ignore
     }
   };
 
@@ -156,29 +174,43 @@ export default function StudentsPage() {
         ) : (
           <div className="space-y-2">
             {students.map((s) => (
-              <div key={s.id} className="bg-white border rounded-lg p-4 flex items-center justify-between">
-                <div>
-                  <div className="font-medium">{s.name}</div>
-                  <div className="text-xs text-gray-400 mt-0.5">
-                    剩余课时 <span className={s.remaining_lessons <= 2 ? "text-red-500 font-medium" : "text-gray-600"}>{s.remaining_lessons}</span>
-                    {" · "}已完成 {s.completed_lesson_count} 节
-                    {s.phone && <span>{" · "}{s.phone}</span>}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
+              <div key={s.id} className="bg-white border rounded-lg p-4">
+                <div className="flex items-center justify-between">
+                  <button onClick={() => navigate(`/students/${s.id}`)} className="text-left">
+                    <div className="font-medium hover:text-blue-500 transition-colors">{s.name}</div>
+                    <div className="text-xs text-gray-400 mt-0.5">
+                      剩余 <span className={s.remaining_lessons <= 2 ? "text-red-500 font-medium" : "text-gray-600"}>{s.remaining_lessons}</span> 课时 · 已上 {s.completed_lesson_count}
+                      {s.phone && <span> · {s.phone}</span>}
+                    </div>
+                  </button>
                   <ActiveBadge active={s.is_active} />
-                  <button onClick={() => toggleStudentActive(s)} className="text-xs text-blue-500">切换</button>
+                </div>
+                <div className="flex gap-1 mt-3 pt-3 border-t border-gray-50">
+                  <button onClick={() => handleQuickCheckIn(s.id)} className="flex-1 py-1.5 bg-green-500 text-white rounded text-xs font-medium">
+                    签到
+                  </button>
+                  <button onClick={() => setQuickLessonId(s.id)} className="flex-1 py-1.5 bg-blue-500 text-white rounded text-xs font-medium">
+                    加课
+                  </button>
+                  <button onClick={() => setQuickPaymentId(s.id)} className="flex-1 py-1.5 bg-orange-500 text-white rounded text-xs font-medium">
+                    缴费
+                  </button>
                   <button
                     onClick={() => {
                       setEditingId(s.id);
                       setStudentForm({ name: s.name, phone: s.phone || "", age: s.age?.toString() || "", grade: s.grade || "", notes: s.notes || "", is_active: s.is_active });
                       setShowForm(true);
                     }}
-                    className="text-xs text-gray-400"
+                    className="flex-1 py-1.5 border text-gray-500 rounded text-xs font-medium"
                   >
                     编辑
                   </button>
-                  <button onClick={() => handleDelete(s.id)} className="text-xs text-red-400">删除</button>
+                  <button onClick={() => toggleStudentActive(s)} className="flex-1 py-1.5 bg-gray-400 text-white rounded text-xs">
+                    {s.is_active ? "停课" : "复课"}
+                  </button>
+                  <button onClick={() => handleDelete(s.id)} className="flex-1 py-1.5 bg-red-400 text-white rounded text-xs">
+                    删除
+                  </button>
                 </div>
               </div>
             ))}
@@ -215,6 +247,7 @@ export default function StudentsPage() {
         </div>
       )}
 
+      {/* Edit modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black/30 z-[60] flex items-end justify-center" onClick={(e) => { if (e.target === e.currentTarget) setShowForm(false); }}>
           <div className="bg-white rounded-t-2xl w-full max-w-lg p-6 pb-20">
@@ -241,15 +274,18 @@ export default function StudentsPage() {
 
             <div className="flex gap-2 mt-4">
               <button onClick={() => setShowForm(false)} className="flex-1 py-2 border rounded-lg text-sm">取消</button>
-              <button
-                onClick={segment === "individual" ? handleSaveStudent : handleSaveGroup}
-                className="flex-1 py-2 bg-blue-500 text-white rounded-lg text-sm"
-              >
-                保存
-              </button>
+              <button onClick={segment === "individual" ? handleSaveStudent : handleSaveGroup} className="flex-1 py-2 bg-blue-500 text-white rounded-lg text-sm">保存</button>
             </div>
           </div>
         </div>
+      )}
+
+      {/* Quick action modals */}
+      {quickLessonId && (
+        <LessonFormModal studentId={quickLessonId} onClose={() => setQuickLessonId(null)} onSaved={() => { setQuickLessonId(null); loadData(); }} />
+      )}
+      {quickPaymentId && (
+        <PaymentFormModal studentId={quickPaymentId} onClose={() => setQuickPaymentId(null)} onSaved={() => { setQuickPaymentId(null); loadData(); }} />
       )}
     </div>
   );

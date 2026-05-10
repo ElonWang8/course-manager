@@ -16,6 +16,7 @@ export default function MainLayout({ onLogout }: { onLogout: () => void }) {
           <Route path="/" element={<Navigate to="/schedule" replace />} />
           <Route path="/schedule" element={<SchedulePage />} />
           <Route path="/students" element={<StudentsPage />} />
+          <Route path="/students/:id" element={<StudentDetailPage />} />
           <Route path="/lessons" element={<LessonsPage />} />
           <Route path="/statistics" element={<StatisticsPage />} />
           <Route path="/settings" element={<SettingsPage onLogout={onLogout} />} />
@@ -49,3 +50,4 @@ import StudentsPage from "./StudentsPage";
 import LessonsPage from "./LessonsPage";
 import StatisticsPage from "./StatisticsPage";
 import SettingsPage from "./SettingsPage";
+import StudentDetailPage from "./StudentDetailPage";

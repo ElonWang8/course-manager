@@ -216,8 +216,8 @@ export default function StudentsPage() {
       )}
 
       {showForm && (
-        <div className="fixed inset-0 bg-black/30 z-[60] flex items-end justify-center" onClick={() => setShowForm(false)}>
-          <div className="bg-white rounded-t-2xl w-full max-w-lg p-6 pb-20" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/30 z-[60] flex items-end justify-center" onClick={(e) => { if (e.target === e.currentTarget) setShowForm(false); }}>
+          <div className="bg-white rounded-t-2xl w-full max-w-lg p-6 pb-20">
             <h3 className="font-semibold mb-4">
               {editingId ? "编辑" : "新增"}{segment === "individual" ? "学生" : "集体课"}
             </h3>

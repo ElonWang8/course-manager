@@ -5,7 +5,7 @@ from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from app.database import get_db
-from app.models import Student
+from app.models import Student, Lesson, Payment, ScheduleSlot
 from app.schemas import StudentCreate, StudentUpdate, StudentOut, StudentDetailOut
 
 router = APIRouter(tags=["学生"])
@@ -68,9 +68,10 @@ async def create_student(body: StudentCreate, db: AsyncSession = Depends(get_db)
 @router.get("/students/{student_id}", response_model=StudentDetailOut)
 async def get_student(student_id: str, db: AsyncSession = Depends(get_db)):
     stmt = select(Student).options(
-        selectinload(Student.lessons),
-        selectinload(Student.payments),
-        selectinload(Student.schedule_slots),
+        selectinload(Student.lessons).selectinload(Lesson.student),
+        selectinload(Student.payments).selectinload(Payment.student),
+        selectinload(Student.schedule_slots).selectinload(ScheduleSlot.student),
+        selectinload(Student.schedule_slots).selectinload(ScheduleSlot.group_class),
         selectinload(Student.group_classes),
     ).where(Student.id == student_id)
     result = await db.execute(stmt)

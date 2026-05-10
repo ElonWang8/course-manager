@@ -19,7 +19,7 @@ export default function LessonFormModal({ studentId, groupClassId, editLesson, o
   const [time, setTime] = useState(d.format("HH:mm"));
   const [duration, setDuration] = useState(editLesson ? String(editLesson.duration) : "45");
   const [content, setContent] = useState(editLesson?.content || "");
-  const [status, setStatus] = useState(editLesson?.status || "scheduled");
+  const [status, setStatus] = useState<string>(editLesson?.status || "scheduled");
 
   const handleSave = async () => {
     try {

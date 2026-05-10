@@ -22,7 +22,7 @@ export default function StudentDetailPage() {
   const [lessonSub, setLessonSub] = useState(1); // 0=completed, 1=scheduled
   const [showLessonForm, setShowLessonForm] = useState(false);
   const [showPaymentForm, setShowPaymentForm] = useState(false);
-  const [editingLesson, setEditingLesson] = useState<typeof student.lessons[0] | null>(null);
+  const [editingLesson, setEditingLesson] = useState<Lesson | null>(null);
 
   const loadStudent = async () => {
     try {

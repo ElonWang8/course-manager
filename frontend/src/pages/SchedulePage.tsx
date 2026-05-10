@@ -188,13 +188,14 @@ export default function SchedulePage() {
       <div className="md:hidden space-y-3">
         {weekDays.map((day) => {
           const daySlots = getSlotLessonsForDay(day);
+          const unscheduled = getUnscheduledLessons(day);
           const isToday = day.format("YYYY-MM-DD") === dayjs().format("YYYY-MM-DD");
           return (
             <div key={day.format("YYYY-MM-DD")} className={`border rounded-lg p-3 ${isToday ? "border-blue-300 bg-blue-50/30" : "border-gray-100 bg-white"}`}>
               <div className={`font-medium text-sm mb-2 ${isToday ? "text-blue-600" : "text-gray-600"}`}>
                 {day.format("M月D日 ddd")}
               </div>
-              {daySlots.length === 0 ? (
+              {daySlots.length === 0 && unscheduled.length === 0 ? (
                 <div className="text-xs text-gray-300">无课程</div>
               ) : (
                 <div className="space-y-2">

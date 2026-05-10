@@ -4,7 +4,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import "dayjs/locale/zh-cn";
 import api from "../api/client";
-import { StudentDetail } from "../types";
+import { StudentDetail, Lesson } from "../types";
 import { LessonStatusBadge, PaymentMethodBadge } from "../components/StatusBadge";
 import LessonFormModal from "../components/LessonFormModal";
 import PaymentFormModal from "../components/PaymentFormModal";
@@ -22,6 +22,7 @@ export default function StudentDetailPage() {
   const [lessonSub, setLessonSub] = useState(1); // 0=completed, 1=scheduled
   const [showLessonForm, setShowLessonForm] = useState(false);
   const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [editingLesson, setEditingLesson] = useState<typeof student.lessons[0] | null>(null);
 
   const loadStudent = async () => {
     try {
@@ -148,9 +149,7 @@ export default function StudentDetailPage() {
                     {l.status === "scheduled" && (
                       <button onClick={() => handleStatusChange(l.id, "completed")} className="text-xs text-green-500">签到</button>
                     )}
-                    {(l.status === "completed" || l.status === "cancelled") && (
-                      <button onClick={() => handleStatusChange(l.id, "scheduled")} className="text-xs text-blue-400">恢复</button>
-                    )}
+                    <button onClick={() => { setEditingLesson(l); setShowLessonForm(true); }} className="text-xs text-gray-400">编辑</button>
                   </div>
                 </div>
               ))}
@@ -202,7 +201,7 @@ export default function StudentDetailPage() {
           <button onClick={handleQuickCheckIn} className="flex-1 py-2 bg-green-500 text-white rounded-lg text-sm font-medium">
             今日签到
           </button>
-          <button onClick={() => setShowLessonForm(true)} className="flex-1 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium">
+          <button onClick={() => { setEditingLesson(null); setShowLessonForm(true); }} className="flex-1 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium">
             添加课程
           </button>
           <button onClick={() => setShowPaymentForm(true)} className="flex-1 py-2 bg-orange-500 text-white rounded-lg text-sm font-medium">
@@ -213,7 +212,12 @@ export default function StudentDetailPage() {
 
       {/* Modals */}
       {showLessonForm && (
-        <LessonFormModal studentId={id} onClose={() => setShowLessonForm(false)} onSaved={() => { setShowLessonForm(false); loadStudent(); }} />
+        <LessonFormModal
+          studentId={id}
+          editLesson={editingLesson}
+          onClose={() => { setShowLessonForm(false); setEditingLesson(null); }}
+          onSaved={() => { setShowLessonForm(false); setEditingLesson(null); loadStudent(); }}
+        />
       )}
       {showPaymentForm && (
         <PaymentFormModal studentId={id} onClose={() => setShowPaymentForm(false)} onSaved={() => { setShowPaymentForm(false); loadStudent(); }} />

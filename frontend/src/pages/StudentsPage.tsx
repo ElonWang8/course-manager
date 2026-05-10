@@ -288,7 +288,7 @@ export default function StudentsPage() {
 
       {/* Quick action modals */}
       {quickLessonId && (
-        <LessonFormModal studentId={quickLessonId} onClose={() => setQuickLessonId(null)} onSaved={() => { setQuickLessonId(null); loadData(); }} />
+        <LessonFormModal studentId={quickLessonId} editLesson={null} onClose={() => setQuickLessonId(null)} onSaved={() => { setQuickLessonId(null); loadData(); }} />
       )}
       {quickPaymentId && (
         <PaymentFormModal studentId={quickPaymentId} onClose={() => setQuickPaymentId(null)} onSaved={() => { setQuickPaymentId(null); loadData(); }} />

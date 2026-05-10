@@ -1,31 +1,51 @@
 import { useState } from "react";
 import dayjs from "dayjs";
 import api from "../api/client";
+import { Lesson } from "../types";
 
 interface Props {
   studentId?: string;
   groupClassId?: string;
+  editLesson?: Lesson | null;
   onClose: () => void;
   onSaved: () => void;
 }
 
-export default function LessonFormModal({ studentId, groupClassId, onClose, onSaved }: Props) {
-  const [date, setDate] = useState(dayjs().format("YYYY-MM-DD"));
-  const [time, setTime] = useState("16:00");
-  const [duration, setDuration] = useState("45");
-  const [content, setContent] = useState("");
-  const [status, setStatus] = useState("scheduled");
+export default function LessonFormModal({ studentId, groupClassId, editLesson, onClose, onSaved }: Props) {
+  const isEdit = !!editLesson;
+  const d = editLesson ? dayjs(editLesson.date) : dayjs();
+
+  const [date, setDate] = useState(d.format("YYYY-MM-DD"));
+  const [time, setTime] = useState(d.format("HH:mm"));
+  const [duration, setDuration] = useState(editLesson ? String(editLesson.duration) : "45");
+  const [content, setContent] = useState(editLesson?.content || "");
+  const [status, setStatus] = useState(editLesson?.status || "scheduled");
 
   const handleSave = async () => {
     try {
-      await api.post("/lessons", {
+      const payload = {
         student_id: studentId || undefined,
         group_class_id: groupClassId || undefined,
         date: date + "T" + time + ":00",
         duration: parseInt(duration) || 45,
         content: content || undefined,
         status,
-      });
+      };
+      if (isEdit) {
+        await api.put(`/lessons/${editLesson!.id}`, payload);
+      } else {
+        await api.post("/lessons", payload);
+      }
+      onSaved();
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!editLesson || !confirm("确定删除此课程？")) return;
+    try {
+      await api.delete(`/lessons/${editLesson.id}`);
       onSaved();
     } catch {
       // ignore
@@ -35,7 +55,12 @@ export default function LessonFormModal({ studentId, groupClassId, onClose, onSa
   return (
     <div className="fixed inset-0 bg-black/30 z-[60] flex items-end justify-center" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="bg-white rounded-t-2xl w-full max-w-lg p-6 pb-20">
-        <h3 className="font-semibold mb-4">添加课程</h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-semibold">{isEdit ? "编辑课程" : "添加课程"}</h3>
+          {isEdit && (
+            <button onClick={handleDelete} className="text-red-400 text-sm">删除</button>
+          )}
+        </div>
         <div className="space-y-3">
           <div className="flex gap-2">
             <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="flex-1 px-3 py-2 border rounded-lg text-sm" />
@@ -46,6 +71,7 @@ export default function LessonFormModal({ studentId, groupClassId, onClose, onSa
           <select value={status} onChange={(e) => setStatus(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm">
             <option value="scheduled">已预约</option>
             <option value="completed">已完成</option>
+            <option value="cancelled">已取消</option>
           </select>
         </div>
         <div className="flex gap-2 mt-4">

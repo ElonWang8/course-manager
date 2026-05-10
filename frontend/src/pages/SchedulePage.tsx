@@ -31,7 +31,7 @@ export default function SchedulePage() {
         api.get("/lessons", {
           params: {
             date_from: monday.format("YYYY-MM-DD"),
-            date_to: monday.add(6, "day").format("YYYY-MM-DD"),
+            date_to: monday.add(7, "day").format("YYYY-MM-DD"),
           },
         }),
       ]);
@@ -108,7 +108,7 @@ export default function SchedulePage() {
       <div className="flex items-center justify-between mb-4">
         <button onClick={() => setWeekOffset((w) => w - 1)} className="px-3 py-1.5 text-sm bg-white border rounded-lg hover:bg-gray-50">上一周</button>
         <h2 className="font-semibold text-gray-700">
-          {monday.format("M月D日")} - {monday.add(6, "day").format("M月D日")}
+          {monday.format("M月D日")} - {monday.add(6, "day").format("M月D日")}（周{monday.format("M/D")}-{monday.add(6, "day").format("M/D")}）
         </h2>
         <button onClick={() => setWeekOffset((w) => w + 1)} className="px-3 py-1.5 text-sm bg-white border rounded-lg hover:bg-gray-50">下一周</button>
       </div>

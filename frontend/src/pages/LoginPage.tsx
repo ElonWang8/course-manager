@@ -9,25 +9,20 @@ export default function LoginPage({ onLogin }: { onLogin: () => void }) {
 
   const handleLogin = async () => {
     if (!password || loading) return;
-    console.log("点击登录，密码长度:", password.length);
     setError("");
     setLoading(true);
     try {
       const res = await api.post("/auth/login", { password, remember });
-      console.log("API 响应:", res.data);
       if (res.data.token) {
-        console.log("登录成功，跳转...");
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("expires_at", res.data.expires_at);
-        window.location.href = "/schedule";
+        onLogin();
       } else {
-        console.log("token 为空，密码错误");
         setError("密码错误");
         setLoading(false);
       }
     } catch (err: any) {
-      console.error("登录请求失败:", err);
-      setError(err?.response?.data?.detail || err?.message || "网络错误，后端是否启动？");
+      setError(err?.response?.data?.detail || err?.message || "登录失败，请检查后端服务是否正常运行");
       setLoading(false);
     }
   };
@@ -44,7 +39,7 @@ export default function LoginPage({ onLogin }: { onLogin: () => void }) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-              placeholder="管理密码（默认 admin123）"
+              placeholder="管理密码"
               className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-blue-400 focus:ring-1 focus:ring-blue-400 outline-none text-sm"
               autoFocus
             />

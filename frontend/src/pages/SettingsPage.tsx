@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import api from "../api/client";
 import { BackupInfo } from "../types";
 
-export default function SettingsPage() {
+export default function SettingsPage({ onLogout }: { onLogout: () => void }) {
   const [backups, setBackups] = useState<BackupInfo[]>([]);
   const [msg, setMsg] = useState("");
   const [restoreFile, setRestoreFile] = useState<File | null>(null);
@@ -55,8 +55,13 @@ export default function SettingsPage() {
     }
   };
 
-  const handleDownloadBackup = (filename: string) => {
-    window.open(`/api/backup/download/${filename}`, "_blank");
+  const handleDownloadBackup = async (filename: string) => {
+    try {
+      const res = await api.get(`/backup/download/${filename}`, { responseType: "blob" });
+      downloadBlob(res.data, filename);
+    } catch {
+      showMsg("下载失败");
+    }
   };
 
   const handleRestore = async () => {
@@ -146,6 +151,14 @@ export default function SettingsPage() {
           <p className="text-xs text-red-400 mt-1">恢复将覆盖当前所有数据，请谨慎操作</p>
         </div>
       </div>
+
+      {/* Logout */}
+      <button
+        onClick={() => { if (confirm("确定退出登录？")) onLogout(); }}
+        className="w-full py-2 border border-red-200 text-red-500 rounded-lg text-sm hover:bg-red-50"
+      >
+        退出登录
+      </button>
 
       <p className="text-center text-xs text-gray-300 pb-4">钢琴课时管理 v1.0</p>
     </div>

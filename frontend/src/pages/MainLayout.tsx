@@ -1,9 +1,4 @@
-import { Routes, Route, NavLink, useLocation } from "react-router-dom";
-import SchedulePage from "./SchedulePage";
-import StudentsPage from "./StudentsPage";
-import LessonsPage from "./LessonsPage";
-import StatisticsPage from "./StatisticsPage";
-import SettingsPage from "./SettingsPage";
+import { Routes, Route, NavLink, Navigate } from "react-router-dom";
 
 const tabs = [
   { path: "/schedule", label: "课程表", icon: "📅" },
@@ -14,21 +9,16 @@ const tabs = [
 ];
 
 export default function MainLayout({ onLogout }: { onLogout: () => void }) {
-  const location = useLocation();
-  if (location.pathname === "/") {
-    window.location.hash = "/schedule";
-    return null;
-  }
-
   return (
     <div className="min-h-screen bg-gray-50 pb-16">
       <div className="max-w-5xl mx-auto px-4 pt-4">
         <Routes>
+          <Route path="/" element={<Navigate to="/schedule" replace />} />
           <Route path="/schedule" element={<SchedulePage />} />
           <Route path="/students" element={<StudentsPage />} />
           <Route path="/lessons" element={<LessonsPage />} />
           <Route path="/statistics" element={<StatisticsPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/settings" element={<SettingsPage onLogout={onLogout} />} />
         </Routes>
       </div>
 
@@ -53,3 +43,9 @@ export default function MainLayout({ onLogout }: { onLogout: () => void }) {
     </div>
   );
 }
+
+import SchedulePage from "./SchedulePage";
+import StudentsPage from "./StudentsPage";
+import LessonsPage from "./LessonsPage";
+import StatisticsPage from "./StatisticsPage";
+import SettingsPage from "./SettingsPage";

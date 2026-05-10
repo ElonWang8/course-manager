@@ -19,7 +19,7 @@
 | 前端 | React 19 + TypeScript + Tailwind CSS + Recharts |
 | 后端 | Python FastAPI + SQLAlchemy (async) + aiosqlite |
 | 数据库 | SQLite |
-| 部署 | Docker Compose |
+| 部署 | Docker Compose（单容器，前后端合一） |
 
 ## 快速开始
 

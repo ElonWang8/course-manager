@@ -1,7 +1,9 @@
-# 本地构建版本，不依赖预编译镜像
+# 本地构建版本
 services:
-  backend:
-    build: ./backend
+  app:
+    build: .
+    ports:
+      - "3721:8000"
     environment:
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
       - JWT_SECRET=${JWT_SECRET:-change-me-to-random-string}
@@ -9,12 +11,3 @@ services:
     volumes:
       - ./backend/data:/app/data
       - /etc/localtime:/etc/localtime:ro
-
-  frontend:
-    build: ./frontend
-    ports:
-      - "3721:80"
-    environment:
-      - TZ=Asia/Shanghai
-    depends_on:
-      - backend

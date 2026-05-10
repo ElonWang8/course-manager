@@ -1,4 +1,5 @@
 from __future__ import annotations
+import uuid
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select, func
@@ -67,13 +68,14 @@ async def create_student(body: StudentCreate, db: AsyncSession = Depends(get_db)
 
 @router.get("/students/{student_id}", response_model=StudentDetailOut)
 async def get_student(student_id: str, db: AsyncSession = Depends(get_db)):
+    uid = uuid.UUID(student_id)
     stmt = select(Student).options(
         selectinload(Student.lessons).selectinload(Lesson.student),
         selectinload(Student.payments).selectinload(Payment.student),
         selectinload(Student.schedule_slots).selectinload(ScheduleSlot.student),
         selectinload(Student.schedule_slots).selectinload(ScheduleSlot.group_class),
         selectinload(Student.group_classes),
-    ).where(Student.id == student_id)
+    ).where(Student.id == uid)
     result = await db.execute(stmt)
     s = result.scalar_one_or_none()
     if not s:
@@ -93,7 +95,8 @@ async def get_student(student_id: str, db: AsyncSession = Depends(get_db)):
 
 @router.put("/students/{student_id}", response_model=StudentOut)
 async def update_student(student_id: str, body: StudentUpdate, db: AsyncSession = Depends(get_db)):
-    s = await db.get(Student, student_id)
+    uid = uuid.UUID(student_id)
+    s = await db.get(Student, uid)
     if not s:
         raise HTTPException(404, "学生不存在")
     for k, v in body.model_dump(exclude_unset=True).items():
@@ -110,7 +113,8 @@ async def update_student(student_id: str, body: StudentUpdate, db: AsyncSession 
 
 @router.delete("/students/{student_id}", status_code=204)
 async def delete_student(student_id: str, db: AsyncSession = Depends(get_db)):
-    s = await db.get(Student, student_id)
+    uid = uuid.UUID(student_id)
+    s = await db.get(Student, uid)
     if not s:
         raise HTTPException(404, "学生不存在")
     await db.delete(s)

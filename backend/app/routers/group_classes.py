@@ -1,4 +1,5 @@
 from __future__ import annotations
+import uuid
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
@@ -49,7 +50,7 @@ async def get_group_class(gc_id: str, db: AsyncSession = Depends(get_db)):
         selectinload(GroupClass.students).selectinload(Student.lessons),
         selectinload(GroupClass.students).selectinload(Student.payments),
         selectinload(GroupClass.schedule_slots),
-    ).where(GroupClass.id == gc_id)
+    ).where(GroupClass.id == uuid.UUID(gc_id))
     result = await db.execute(stmt)
     gc = result.scalar_one_or_none()
     if not gc:
@@ -59,7 +60,7 @@ async def get_group_class(gc_id: str, db: AsyncSession = Depends(get_db)):
 
 @router.put("/group-classes/{gc_id}", response_model=GroupClassOut)
 async def update_group_class(gc_id: str, body: GroupClassUpdate, db: AsyncSession = Depends(get_db)):
-    gc = await db.get(GroupClass, gc_id)
+    gc = await db.get(GroupClass, uuid.UUID(gc_id))
     if not gc:
         raise HTTPException(404, "集体课不存在")
 
@@ -80,7 +81,7 @@ async def update_group_class(gc_id: str, body: GroupClassUpdate, db: AsyncSessio
 
 @router.delete("/group-classes/{gc_id}", status_code=204)
 async def delete_group_class(gc_id: str, db: AsyncSession = Depends(get_db)):
-    gc = await db.get(GroupClass, gc_id)
+    gc = await db.get(GroupClass, uuid.UUID(gc_id))
     if not gc:
         raise HTTPException(404, "集体课不存在")
     await db.delete(gc)

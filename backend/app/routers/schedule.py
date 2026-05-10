@@ -1,4 +1,5 @@
 from __future__ import annotations
+import uuid
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
@@ -45,7 +46,7 @@ async def create_slot(body: ScheduleSlotCreate, db: AsyncSession = Depends(get_d
 
 @router.put("/schedule-slots/{slot_id}", response_model=ScheduleSlotOut)
 async def update_slot(slot_id: str, body: ScheduleSlotUpdate, db: AsyncSession = Depends(get_db)):
-    sl = await db.get(ScheduleSlot, slot_id)
+    sl = await db.get(ScheduleSlot, uuid.UUID(slot_id))
     if not sl:
         raise HTTPException(404, "排课不存在")
     for k, v in body.model_dump(exclude_unset=True).items():
@@ -57,7 +58,7 @@ async def update_slot(slot_id: str, body: ScheduleSlotUpdate, db: AsyncSession =
 
 @router.delete("/schedule-slots/{slot_id}", status_code=204)
 async def delete_slot(slot_id: str, db: AsyncSession = Depends(get_db)):
-    sl = await db.get(ScheduleSlot, slot_id)
+    sl = await db.get(ScheduleSlot, uuid.UUID(slot_id))
     if not sl:
         raise HTTPException(404, "排课不存在")
     await db.delete(sl)

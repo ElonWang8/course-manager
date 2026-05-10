@@ -1,4 +1,5 @@
 from __future__ import annotations
+import uuid
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
@@ -54,7 +55,7 @@ async def create_lesson(body: LessonCreate, db: AsyncSession = Depends(get_db)):
 
 @router.put("/lessons/{lesson_id}", response_model=LessonOut)
 async def update_lesson(lesson_id: str, body: LessonUpdate, db: AsyncSession = Depends(get_db)):
-    l = await db.get(Lesson, lesson_id)
+    l = await db.get(Lesson, uuid.UUID(lesson_id))
     if not l:
         raise HTTPException(404, "课程不存在")
     for k, v in body.model_dump(exclude_unset=True).items():
@@ -66,7 +67,7 @@ async def update_lesson(lesson_id: str, body: LessonUpdate, db: AsyncSession = D
 
 @router.delete("/lessons/{lesson_id}", status_code=204)
 async def delete_lesson(lesson_id: str, db: AsyncSession = Depends(get_db)):
-    l = await db.get(Lesson, lesson_id)
+    l = await db.get(Lesson, uuid.UUID(lesson_id))
     if not l:
         raise HTTPException(404, "课程不存在")
     await db.delete(l)
@@ -75,7 +76,7 @@ async def delete_lesson(lesson_id: str, db: AsyncSession = Depends(get_db)):
 
 @router.post("/lessons/checkin", response_model=CheckInResponse)
 async def check_in_group(body: CheckInRequest, db: AsyncSession = Depends(get_db)):
-    gc = await db.get(GroupClass, body.group_class_id)
+    gc = await db.get(GroupClass, uuid.UUID(str(body.group_class_id)))
     if not gc:
         raise HTTPException(404, "集体课不存在")
 

@@ -1,4 +1,5 @@
 from __future__ import annotations
+import uuid
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
@@ -53,7 +54,7 @@ async def create_payment(body: PaymentCreate, db: AsyncSession = Depends(get_db)
 
 @router.put("/payments/{payment_id}", response_model=PaymentOut)
 async def update_payment(payment_id: str, body: PaymentUpdate, db: AsyncSession = Depends(get_db)):
-    p = await db.get(Payment, payment_id)
+    p = await db.get(Payment, uuid.UUID(payment_id))
     if not p:
         raise HTTPException(404, "缴费记录不存在")
     for k, v in body.model_dump(exclude_unset=True).items():
@@ -65,7 +66,7 @@ async def update_payment(payment_id: str, body: PaymentUpdate, db: AsyncSession 
 
 @router.delete("/payments/{payment_id}", status_code=204)
 async def delete_payment(payment_id: str, db: AsyncSession = Depends(get_db)):
-    p = await db.get(Payment, payment_id)
+    p = await db.get(Payment, uuid.UUID(payment_id))
     if not p:
         raise HTTPException(404, "缴费记录不存在")
     await db.delete(p)
